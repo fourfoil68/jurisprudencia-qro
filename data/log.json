@@ -1,0 +1,8 @@
+{
+ "fecha": "2026-10-28",
+ "ok": false,
+ "nota": "No se pudo leer ning\u00fan registro: posible bloqueo del Semanario.",
+ "codigos_http": {
+  "403": 5
+ }
+}

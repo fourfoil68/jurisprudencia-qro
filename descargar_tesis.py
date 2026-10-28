@@ -19,7 +19,9 @@ CARPETA = "data"
 ESTADO = os.path.join(CARPETA, "estado.json")
 SEMILLA = 2030000          # registro de arranque si no hay estado previo
 FALLOS_PARA_PARAR = 60     # registros vacíos seguidos que indican el final
-MAX_PETICIONES = 4000
+MAX_PETICIONES = 7000
+SONDEO_PASO = 20           # al toparse con un hueco, sondea cada 20 registros...
+SONDEO_MAX = 10000         # ...hasta 10,000 registros adelante
 RETROCESO_INICIAL = 500    # en la primera ejecución, cuántos registros recientes tomar
 PAUSA = 0.25
 
@@ -115,7 +117,16 @@ def main():
         inicio = frontera - RETROCESO_INICIAL
 
     encontradas, fallos, registro, ultimo = [], 0, inicio, estado.get("ultimo_registro", inicio - 1)
-    while fallos < FALLOS_PARA_PARAR and sum(estadisticas.values()) < MAX_PETICIONES:
+    while sum(estadisticas.values()) < MAX_PETICIONES:
+        if fallos >= FALLOS_PARA_PARAR:
+            # La numeración puede tener saltos grandes: antes de rendirse,
+            # sondea más adelante y salta directo al siguiente bloque con tesis.
+            salto = next((registro + d for d in range(SONDEO_PASO, SONDEO_MAX + 1, SONDEO_PASO)
+                          if pedir(registro + d)), None)
+            if salto is None:
+                break
+            registro, fallos = salto - SONDEO_PASO + 1, 0
+            continue
         tesis = pedir(registro)
         if tesis:
             encontradas.append({"registro": registro, "datos": tesis})

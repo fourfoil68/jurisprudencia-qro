@@ -45,6 +45,8 @@ def diagnosticar():
         "scjn_portada": "https://www.scjn.gob.mx/",
         "sjf2_portada": "https://sjf2.scjn.gob.mx/",
         "sjf2_api": API.format(2030000),
+        "api_reciente_normal": API.format(2032808),
+        "api_reciente_semanal": API.format(2032808) + "?isSemanal=true",
     }.items():
         try:
             with urllib.request.urlopen(urllib.request.Request(url, headers=CABECERAS), timeout=30) as r:
@@ -56,12 +58,11 @@ def diagnosticar():
     print("Diagnóstico:", diagnostico)
 
 
-def pedir(registro):
-    """Devuelve el JSON de la tesis, o None si no existe. Registra el código HTTP."""
-    req = urllib.request.Request(
-        API.format(registro),
-        headers=CABECERAS,
-    )
+VARIANTES = ["", "?isSemanal=true"]   # las tesis recientes solo salen en la vista "semanal"
+
+
+def _pedir_url(url):
+    req = urllib.request.Request(url, headers=CABECERAS)
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             codigo = r.status
@@ -79,6 +80,15 @@ def pedir(registro):
     except json.JSONDecodeError:
         return None
     return datos or None
+
+
+def pedir(registro):
+    """Devuelve el JSON de la tesis (probando ambas vistas de la API), o None si no existe."""
+    for v in VARIANTES:
+        datos = _pedir_url(API.format(registro) + v)
+        if datos:
+            return datos
+    return None
 
 
 def existe_cerca(registro, ventana=5):
@@ -136,7 +146,15 @@ def main():
         registro += 1
 
     hoy = date.today().isoformat()
+    if not encontradas:
+        escribir_log(ok=True, nota=f"0 tesis nuevas; último registro {ultimo}. Se conservan los archivos anteriores.")
+        return
     archivo = os.path.join(CARPETA, f"tesis-{hoy}.json")
+    if os.path.exists(archivo):  # segunda ejecución el mismo día: acumula sin duplicar
+        with open(archivo, encoding="utf-8") as f:
+            previas = json.load(f)
+        vistos = {t["registro"] for t in encontradas}
+        encontradas = [t for t in previas if t["registro"] not in vistos] + encontradas
     with open(archivo, "w", encoding="utf-8") as f:
         json.dump(encontradas, f, ensure_ascii=False, indent=1)
     with open(ESTADO, "w", encoding="utf-8") as f:

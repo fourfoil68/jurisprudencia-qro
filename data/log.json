@@ -1,8 +1,14 @@
 {
  "fecha": "2026-10-28",
- "ok": false,
- "nota": "No se pudo leer ning\u00fan registro: posible bloqueo del Semanario.",
+ "ok": true,
+ "nota": "501 tesis nuevas; \u00faltimo registro 2032687",
  "codigos_http": {
-  "403": 5
+  "200": 506,
+  "404": 100
+ },
+ "diagnostico": {
+  "scjn_portada": 200,
+  "sjf2_portada": 200,
+  "sjf2_api": 200
  }
 }

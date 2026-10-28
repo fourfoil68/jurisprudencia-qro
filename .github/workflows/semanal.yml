@@ -1,0 +1,26 @@
+name: Descarga semanal de tesis
+
+on:
+  schedule:
+    - cron: "0 12 * * 1"   # lunes 6:00 a.m. hora de Querétaro (12:00 UTC)
+  workflow_dispatch:       # permite ejecutarlo a mano desde la pestaña Actions
+
+permissions:
+  contents: write
+
+jobs:
+  descargar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar tesis nuevas
+        run: python3 descargar_tesis.py
+      - name: Guardar resultados
+        if: always()
+        run: |
+          git config user.name "monitor-jurisprudencia"
+          git config user.email "actions@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || git commit -m "Tesis $(date +%F)"
+          git push

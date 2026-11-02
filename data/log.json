@@ -1,10 +1,10 @@
 {
- "fecha": "2026-10-28",
+ "fecha": "2026-11-02",
  "ok": true,
- "nota": "145 tesis nuevas; \u00faltimo registro 2032832",
+ "nota": "31 tesis nuevas; \u00faltimo registro 2032863",
  "codigos_http": {
-  "404": 1265,
-  "200": 145
+  "404": 1151,
+  "200": 31
  },
  "diagnostico": {
   "scjn_portada": 200,
